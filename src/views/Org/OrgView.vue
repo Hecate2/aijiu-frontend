@@ -5,6 +5,8 @@ import DataTable from './DataTable.vue'
 <template>
   <div>org view</div>
   <div>
+  <Suspense>
     <DataTable />
+  </Suspense>
   </div>
 </template>
