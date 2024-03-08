@@ -1,7 +1,7 @@
 <template>
   <el-row style="margin-top: 10px; margin-bottom: 10px;">
     <el-col :span="3">
-      <el-button type="success" @click="createManyOrgs()">新建组织:</el-button>
+      <el-button type="success" @click="createManyOrgs()" v-loading.fullscreen.lock="fullscreenLoading">新建组织:</el-button>
     </el-col>
     <el-col :span="21">
       <el-input v-model="新建组织输入" maxlength="2147483647" show-word-limit :autosize="{ maxRows: 1 }" type="textarea"
@@ -25,9 +25,10 @@
       active-text="启用删除" inactive-text="禁用删除" />
     <el-button v-if="删除开关" v-model="删除按钮"
       style="margin-left: 10px;" type="danger"
-      @click="deleteSelectedOrgs()">
+      @click="deleteSelectedOrgs()" v-loading.fullscreen.lock="fullscreenLoading">
       删除选中</el-button>
-    <el-button @click="refresh()" style="float: right;">刷新</el-button>
+    <el-button @click="refresh()" style="float: right;" v-loading.fullscreen.lock="fullscreenLoading">
+      刷新</el-button>
     <!-- @click="clearSelection()"  -->
   </div>
   <el-table ref="主表格" @selection-change="handleSelectionChange"
@@ -44,9 +45,11 @@
           </template>
           <div>旧名称：<el-text class="mx-1">{{ scope.row.name }}</el-text></div>
           <div>新名称：<el-input v-model="新名称" placeholder="输入新名称" clearable/></div>
-          <el-button @click="renameOrg(scope.row.name, 新名称)">重命名</el-button>
+          <el-button @click="renameOrg(scope.row.name, 新名称)" v-loading.fullscreen.lock="fullscreenLoading">
+            重命名</el-button>
         </el-popover>
-        <el-button v-if="删除开关" type="danger" @click="deleteOrg(scope.row.name, true)">删除</el-button>
+        <el-button v-if="删除开关" type="danger" @click="deleteOrg(scope.row.name, true)" v-loading.fullscreen.lock="fullscreenLoading">
+          删除</el-button>
       </template>
     </el-table-column>
   </el-table>
@@ -66,6 +69,7 @@ const 删除按钮 = ref('')
 const 新名称 = ref('')
 const 主表格 = ref<InstanceType<typeof ElTable>>()
 const 多选 = ref<Org[]>([])
+const fullscreenLoading = ref(false)
 
 interface Org {
   name: string
@@ -83,8 +87,16 @@ const use主表数据store = defineStore('请求结果store', () =>{
 })
 const 主表数据store = use主表数据store()
 async function refresh() {
-  let { data: res } = await axios.get("/orgs/");
-  主表数据store.orgs = res
+  try{
+    fullscreenLoading.value = true
+    主表数据store.orgs = (await axios.get("/orgs/")).data;
+  }catch(err){
+    if (err.response == undefined)
+      ElMessage({ showClose: true, message: err.message, type: 'error', })
+    ElMessage({ showClose: true, message: err.response.data.detail, type: 'error', })
+  }finally{
+    fullscreenLoading.value = false
+  }
 }
 await refresh()
 const 主表数据: ref<Org[]> = computed(() =>
@@ -97,7 +109,7 @@ const 主表数据: ref<Org[]> = computed(() =>
 const toggleAllSelection = () => 主表格.value!.toggleAllSelection()
 const clearSelection = () => 主表格.value!.clearSelection()
 const reverseSelection = () => {
-  主表数据.value.forEach((item) => {
+  主表数据.value.forEach((item: Org) => {
     主表格.value!.toggleRowSelection(item, undefined);
   });
 }
@@ -107,7 +119,7 @@ function setDefaultNewName(newName: string) {
 }
 
 async function deleteSelectedOrgs() {
-  await Promise.all(主表格.value!.getSelectionRows().map(row => deleteOrg(row.name, false)))
+  await Promise.all(主表格.value!.getSelectionRows().map((row: { name: string; }) => deleteOrg(row.name, false)))
   await refresh()
 }
 
@@ -120,29 +132,44 @@ async function createManyOrgs() {
 
 async function createOrg(name: string) {
   try {
+    fullscreenLoading.value = true
     await axios.post("/orgs/"+name);
   } catch (err) {
+    if (err.response == undefined)
+      ElMessage({ showClose: true, message: err.message, type: 'error', })
     ElMessage({ showClose: true, message: err.response.data.detail, type: 'error', })
     return
+  }finally{
+    fullscreenLoading.value = false
   }
 }
 
 async function renameOrg(oldName: string, newName: string) {
   try {
+    fullscreenLoading.value = true
     await axios.patch("/orgs/" + oldName + "/" + newName);
   } catch (err) {
+    if (err.response == undefined)
+      ElMessage({ showClose: true, message: err.message, type: 'error', })
     ElMessage({ showClose: true, message: err.response.data.detail, type: 'error', })
     return
+  }finally{
+    fullscreenLoading.value = false
   }
   await refresh()
 }
 
 async function deleteOrg(name: string, refreshNow: Boolean) {
   try{
+    fullscreenLoading.value = true
     await axios.delete("/orgs/"+name);
   }catch(err){
+    if (err.response == undefined)
+      ElMessage({ showClose: true, message: err.message, type: 'error', })
     ElMessage({ showClose: true, message: err.response.data.detail, type: 'error', })
     return
+  }finally{
+    fullscreenLoading.value = false
   }
   if (refreshNow) { await refresh() }
 }
