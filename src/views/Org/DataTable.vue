@@ -13,7 +13,7 @@
       <el-switch v-model="区分大小写" active-text="区分大小写" />
     </el-col>
     <el-col :span="20">
-      <el-input v-model="按名称搜索输入" placeholder="按名称搜索"/>
+      <el-input v-model="按名称搜索输入" placeholder="按名称搜索" clearable/>
     </el-col>
   </el-row>
   <div style="margin-top: 10px; margin-bottom: 10px;">
@@ -23,7 +23,10 @@
     <el-switch v-model="删除开关" style="margin-left: 10px;
       --el-switch-on-color: #ff4949; --el-switch-off-color: #e6a23c"
       active-text="启用删除" inactive-text="禁用删除" />
-    <el-button v-if="删除开关" v-model="删除按钮" style="margin-left: 10px;" type="danger">删除选中</el-button>
+    <el-button v-if="删除开关" v-model="删除按钮"
+      style="margin-left: 10px;" type="danger"
+      @click="deleteSelectedOrgs()">
+      删除选中</el-button>
     <!-- @click="clearSelection()"  -->
   </div>
   <el-table ref="主表格" @selection-change="handleSelectionChange"
@@ -42,14 +45,14 @@
           <div>新名称：<el-input v-model="新名称" placeholder="输入新名称" clearable/></div>
           <el-button @click="renameOrg(scope.row.name, 新名称)">重命名</el-button>
         </el-popover>
-        <el-button v-if="删除开关" type="danger" @click="deleteOrg(scope.row.name)">删除</el-button>
+        <el-button v-if="删除开关" type="danger" @click="deleteOrg(scope.row.name, true)">删除</el-button>
       </template>
     </el-table-column>
   </el-table>
 </template>
 
 <script lang="ts" setup>
-import { createPinia, defineStore, storeToRefs } from 'pinia'
+import { defineStore } from 'pinia'
 import { ref, computed, reactive } from 'vue'
 import { ElTable, ElMessage } from 'element-plus'
 import axios from '@/http-common'
@@ -78,9 +81,11 @@ const use主表数据store = defineStore('请求结果store', () =>{
   return { orgs, addOrg, removeOrg }
 })
 const 主表数据store = use主表数据store()
-const 请求结果: Org[] = (await axios.get("/orgs")).data
-console.log(请求结果)
-主表数据store.orgs = 请求结果
+async function refresh() {
+  let { data: res } = await axios.get("/orgs");
+  主表数据store.orgs = res
+}
+await refresh()
 const 主表数据: ref<Org[]> = computed(() =>
   主表数据store.orgs.filter(
     (data) =>
@@ -100,12 +105,16 @@ function setDefaultNewName(newName: string) {
   新名称.value = newName
 }
 
+async function deleteSelectedOrgs() {
+  await Promise.all(主表格.value!.getSelectionRows().map(row => deleteOrg(row.name, false)))
+  await refresh()
+}
+
 async function createManyOrgs() {
   const userInput: string = 新建组织输入.value
   const splitted: string[] = userInput.split(/[\s,，]+/).filter(Boolean)  // remove empty results
   splitted.forEach(createOrg)
-  let { data: res } = await axios.get("/orgs");
-  主表数据store.orgs = res
+  await refresh()
 }
 
 async function createOrg(name: string) {
@@ -124,19 +133,17 @@ async function renameOrg(oldName: string, newName: string) {
     ElMessage({ showClose: true, message: err.response.data.detail, type: 'error', })
     return
   }
-  let { data: res } = await axios.get("/orgs");
-  主表数据store.orgs = res
+  await refresh()
 }
 
-async function deleteOrg(name: string) {
+async function deleteOrg(name: string, refreshNow: Boolean) {
   try{
     await axios.delete("/orgs/"+name);
   }catch(err){
     ElMessage({ showClose: true, message: err.response.data.detail, type: 'error', })
     return
   }
-  let { data: res } = await axios.get("/orgs");
-  主表数据store.orgs = res
+  if (refreshNow) { await refresh() }
 }
 
 </script>
