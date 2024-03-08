@@ -27,6 +27,7 @@
       style="margin-left: 10px;" type="danger"
       @click="deleteSelectedOrgs()">
       删除选中</el-button>
+    <el-button @click="refresh()" style="float: right;">刷新</el-button>
     <!-- @click="clearSelection()"  -->
   </div>
   <el-table ref="主表格" @selection-change="handleSelectionChange"
@@ -82,7 +83,7 @@ const use主表数据store = defineStore('请求结果store', () =>{
 })
 const 主表数据store = use主表数据store()
 async function refresh() {
-  let { data: res } = await axios.get("/orgs");
+  let { data: res } = await axios.get("/orgs/");
   主表数据store.orgs = res
 }
 await refresh()
