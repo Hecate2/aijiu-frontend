@@ -92,8 +92,9 @@ async function refresh() {
     主表数据store.orgs = (await axios.get("/orgs/")).data;
   }catch(err){
     if (err.response == undefined)
-      ElMessage({ showClose: true, message: err.message, type: 'error', })
-    ElMessage({ showClose: true, message: err.response.data.detail, type: 'error', })
+      ElMessage({ showClose: true, message: err.message, type: 'error', });
+    else
+      ElMessage({ showClose: true, message: err.response.data.detail, type: 'error', });
   }finally{
     fullscreenLoading.value = false
   }
@@ -136,8 +137,9 @@ async function createOrg(name: string) {
     await axios.post("/orgs/"+name);
   } catch (err) {
     if (err.response == undefined)
-      ElMessage({ showClose: true, message: err.message, type: 'error', })
-    ElMessage({ showClose: true, message: err.response.data.detail, type: 'error', })
+      ElMessage({ showClose: true, message: err.message, type: 'error', });
+    else
+      ElMessage({ showClose: true, message: err.response.data.detail, type: 'error', });
     return
   }finally{
     fullscreenLoading.value = false
@@ -150,8 +152,9 @@ async function renameOrg(oldName: string, newName: string) {
     await axios.patch("/orgs/" + oldName + "/" + newName);
   } catch (err) {
     if (err.response == undefined)
-      ElMessage({ showClose: true, message: err.message, type: 'error', })
-    ElMessage({ showClose: true, message: err.response.data.detail, type: 'error', })
+      ElMessage({ showClose: true, message: err.message, type: 'error', });
+    else
+      ElMessage({ showClose: true, message: err.response.data.detail, type: 'error', });
     return
   }finally{
     fullscreenLoading.value = false
@@ -165,8 +168,9 @@ async function deleteOrg(name: string, refreshNow: Boolean) {
     await axios.delete("/orgs/"+name);
   }catch(err){
     if (err.response == undefined)
-      ElMessage({ showClose: true, message: err.message, type: 'error', })
-    ElMessage({ showClose: true, message: err.response.data.detail, type: 'error', })
+      ElMessage({ showClose: true, message: err.message, type: 'error', });
+    else
+      ElMessage({ showClose: true, message: err.response.data.detail, type: 'error', });
     return
   }finally{
     fullscreenLoading.value = false
