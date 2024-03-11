@@ -127,7 +127,7 @@ async function deleteSelectedOrgs() {
 async function createManyOrgs() {
   const userInput: string = 新建组织输入.value
   const splitted: string[] = userInput.split(/[\s,，]+/).filter(Boolean)  // remove empty results
-  splitted.forEach(createOrg)
+  await Promise.all(splitted.map(createOrg))
   await refresh()
 }
 
