@@ -149,7 +149,7 @@ async function createOrg(name: string) {
 async function renameOrg(oldName: string, newName: string) {
   try {
     fullscreenLoading.value = true
-    await axios.patch("/orgs/" + oldName + "/" + newName);
+    await axios.post("/orgs/" + oldName + "/" + newName);
   } catch (err) {
     if (err.response == undefined)
       ElMessage({ showClose: true, message: err.message, type: 'error', });
