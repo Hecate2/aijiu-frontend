@@ -13,7 +13,7 @@
                     <el-input v-model="loginData.password" type="password" autocomplete="off"></el-input>
                 </el-form-item>
                 <el-form-item>
-                    <el-button type="primary" @click="login(loginForm)">Login</el-button>
+                    <el-button type="primary" @click="login()">Login</el-button>
                 </el-form-item>
             </el-form>
             <el-alert v-if="loginError" title="Invalid login" type="error"

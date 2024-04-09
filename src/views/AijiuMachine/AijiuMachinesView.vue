@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import DataTable from './DataTable.vue'
+import AijiuMachinesTable from './AijiuMachinesTable.vue'
 </script>
 
 <template>
   <div>
   <Suspense>
-    <DataTable />
+    <AijiuMachinesTable />
   </Suspense>
   </div>
 </template>
