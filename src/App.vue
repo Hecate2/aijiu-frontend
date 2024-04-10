@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
+import TopMenu from './components/TopMenu.vue';
 </script>
 
 <template>
@@ -16,13 +17,16 @@ import { RouterLink, RouterView } from 'vue-router'
     </div>
   </header>
  -->
+  <header>
+    <TopMenu />
+  </header>
   <RouterView />
 </template>
 
 <style scoped>
 header {
   line-height: 1.5;
-  max-height: 100vh;
+  max-height: 68vh;
 }
 
 .logo {
