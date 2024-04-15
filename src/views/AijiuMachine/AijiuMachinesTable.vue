@@ -1,7 +1,7 @@
 <template>
   <el-row style="margin-top: 10px; margin-bottom: 10px;">
     <el-col :span="6">
-      <el-button type="warning" @click="changeMachinesOrg()" v-loading.fullscreen.lock="fullscreenLoading">转移选中的艾灸机给组织:</el-button>
+      <el-button type="warning" @click="changeMachinesOrg()" v-loading.fullscreen.lock="fullscreenLoading">转移选中的灸疗仪给组织:</el-button>
     </el-col>
     <el-col :span="18">
       <el-input v-model="组织输入" maxlength="2147483647" show-word-limit :autosize="{ maxRows: 1 }" type="textarea"
@@ -10,11 +10,11 @@
   </el-row>
   <el-row style="margin-top: 10px; margin-bottom: 10px;">
     <el-col :span="4">
-      <el-button type="success" @click="createManyMachines()" v-loading.fullscreen.lock="fullscreenLoading">新建艾灸机:</el-button>
+      <el-button type="success" @click="createManyMachines()" v-loading.fullscreen.lock="fullscreenLoading">新建灸疗仪:</el-button>
     </el-col>
     <el-col :span="20">
-      <el-input v-model="新建艾灸机输入" maxlength="2147483647" show-word-limit :autosize="{ maxRows: 1 }" type="textarea"
-        placeholder="输入多个艾灸机id，以空格/换行/制表符/中英文逗号分割" />
+      <el-input v-model="新建灸疗仪输入" maxlength="2147483647" show-word-limit :autosize="{ maxRows: 1 }" type="textarea"
+        placeholder="输入多个灸疗仪id，以空格/换行/制表符/中英文逗号分割" />
     </el-col>
   </el-row>
   <el-row>
@@ -49,11 +49,12 @@
     <!-- @click="clearSelection()"  -->
   </div>
   <el-table ref="主表格" @selection-change="handleSelectionChange"
-    :default-sort="{ prop: 'createTime', order: 'descending' }" :data="主表数据" border stripe
+    :default-sort="{ prop: 'connectedAt', order: 'ascending' }" :data="主表数据" border stripe
     style="width: 100%; --el-table-row-hover-bg-color: #ecf5ff;">
     <el-table-column fixed type="selection" width="fit-content" />
     <el-table-column fixed sortable prop="org" label="组织" width="fit-content" />
     <el-table-column fixed sortable prop="id" label="id" width="fit-content" />
+    <el-table-column fixed sortable prop="connectedAt" label="上线时间(无数据则不在线)" width="fit-content" />
     <el-table-column sortable prop="createTime" label="创建时间" width="fit-content" />
     <el-table-column prop="actions" label="操作" width="fit-content">
       <template #default="scope">
@@ -71,7 +72,7 @@ import { ElTable, ElMessage } from 'element-plus'
 import axios from '@/http-common'
 
 const 组织输入 = ref('')
-const 新建艾灸机输入 = ref('')
+const 新建灸疗仪输入 = ref('')
 const 按组织搜索输入 = ref('')
 const 组织区分大小写 = ref(false)
 const 按id搜索输入 = ref('')
@@ -85,6 +86,7 @@ const fullscreenLoading = ref(false)
 interface AijiuMachine {
   org: string
   id: string
+  connectedAt: Date
   createTime: Date
 }
 const use主表数据store = defineStore('请求结果store', () =>{
@@ -137,7 +139,7 @@ async function deleteSelectedMachines() {
 }
 
 async function createManyMachines() {
-  const userInput: string = 新建艾灸机输入.value
+  const userInput: string = 新建灸疗仪输入.value
   const splitted: string[] = userInput.split(/[\s,，]+/).filter(Boolean)  // remove empty results
   await Promise.all(splitted.map(createMachine))
   await refresh()
