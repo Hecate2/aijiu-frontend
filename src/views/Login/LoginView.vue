@@ -24,7 +24,8 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue';
-import axios from '@/http-common';
+import { useAuthStore } from '@/store';
+const authStore = useAuthStore();
 
 interface LoginData {
     org: string;
@@ -51,13 +52,14 @@ const login = () => {
     loginError.value = false;
     (loginForm.value as any).validate(async (valid: boolean) => {
         if (valid) {
-            let result = await axios.post('/auth/login/', {"org": loginData.value.org, "user": loginData.value.username, "passwd": loginData.value.password})
+            let result = await authStore.login(loginData.value.org, loginData.value.username, loginData.value.password)
             console.log(result)
         } else {
             loginError.value = true;
         }
     });
 };
+
 </script>
   
 <style scoped>
@@ -67,4 +69,4 @@ const login = () => {
     align-items: center;
     height: 100vh;
 }
-</style>
+</style>import type { defineStore } from 'pinia';useAuthStore, 
