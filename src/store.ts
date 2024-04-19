@@ -22,13 +22,13 @@ export const useAuthStore = defineStore({
             return response
         },
         async logout() {
-            await axios.post(`auth/login/revoke-token`);
+            await axios.post(`auth/login/revoke-token`);  // Not implemented at backend
             this.stopRefreshTokenTimer();
             this.token = "";
             // router.push('/login');
         },
         async refreshToken() {
-            this.token = await axios.post(`auth/login/refresh-token`);
+            this.token = await axios.post(`auth/login/refresh-token`);  // Not implemented at backend
             this.startRefreshTokenTimer();
         },
         startRefreshTokenTimer() {

@@ -25,6 +25,8 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 import { useAuthStore } from '@/store';
+import { AxiosError } from 'axios';
+import { ElMessage } from 'element-plus';
 const authStore = useAuthStore();
 
 interface LoginData {
@@ -52,8 +54,14 @@ const login = () => {
     loginError.value = false;
     (loginForm.value as any).validate(async (valid: boolean) => {
         if (valid) {
-            let result = await authStore.login(loginData.value.org, loginData.value.username, loginData.value.password)
-            console.log(result)
+            authStore.login(loginData.value.org, loginData.value.username, loginData.value.password)
+            .then((result) => {
+                console.log(result)
+                ElMessage({ showClose: true, message: "Login success", type: 'success'});
+            }).catch((result: AxiosError) => {
+                console.log(result)
+                ElMessage({ showClose: true, message: result.response.data.detail, type: 'error'});
+            })
         } else {
             loginError.value = true;
         }
@@ -69,4 +77,5 @@ const login = () => {
     align-items: center;
     height: 100vh;
 }
-</style>import type { defineStore } from 'pinia';useAuthStore, 
+</style>import type { defineStore } from 'pinia';useAuthStore, import type { AxiosError } from 'axios';
+, Axios
