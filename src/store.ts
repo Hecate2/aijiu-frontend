@@ -8,16 +8,28 @@ const axios = axios_.create({
     },
   })
 
+const ID_AUTH = 'auth'
 export const useAuthStore = defineStore({
-    id: 'auth',
+    id: ID_AUTH,
     state: () => ({
         token: "",
         refreshTokenTimeout: setTimeout(() => {}, 5*60*1000)
     }),
+    getters: {
+        getToken: (state) => {
+            if (state.token)
+                return state.token;
+            const tokenStorage = localStorage.getItem(ID_AUTH)
+            if (tokenStorage)
+                state.token = JSON.parse(tokenStorage);
+            return state.token;
+        }
+    },
     actions: {
         async login(org: String, username: String, password: String) {
             const response = await axios.post('/auth/login/', {"org": org, "user": username, "passwd": password});
             this.token = response.data.token;
+            localStorage.setItem(this.$id, JSON.stringify(this.token))
             this.startRefreshTokenTimer();
             return response
         },

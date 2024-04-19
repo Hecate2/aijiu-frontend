@@ -13,7 +13,7 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(function (config) {
   // Do something before request is sent
   const authStore = useAuthStore();
-  const token = computed(() => authStore.token).value
+  const token = computed(() => authStore.getToken).value
   if (token) {
     config.headers.Authorization  = `Bearer ${token}`
   }
