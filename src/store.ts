@@ -23,6 +23,17 @@ export const useAuthStore = defineStore({
             if (tokenStorage)
                 state.token = JSON.parse(tokenStorage);
             return state.token;
+        },
+        getOrgAndUsername: (state) => {
+            let token = null;
+            if (state.token)
+                token = state.token;
+            const tokenStorage = localStorage.getItem(ID_AUTH)
+            if (tokenStorage)
+                token = JSON.parse(tokenStorage);
+            const jwtBase64 = token.split('.')[1];
+            const jwtToken = JSON.parse(atob(jwtBase64));
+            return jwtToken;
         }
     },
     actions: {

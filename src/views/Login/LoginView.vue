@@ -68,6 +68,13 @@ const login = () => {
     });
 };
 
+const currentLogin = authStore.getOrgAndUsername;
+console.log(currentLogin);
+if (currentLogin) {
+    loginData.value.org = currentLogin.org;
+    loginData.value.username = currentLogin.name;
+}
+
 </script>
   
 <style scoped>
