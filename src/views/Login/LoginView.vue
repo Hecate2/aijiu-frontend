@@ -14,6 +14,7 @@
                 </el-form-item>
                 <el-form-item>
                     <el-button type="primary" @click="login()">Login</el-button>
+                    <el-button v-if="authStore.getOrgAndUsername" type="warning" @click="logout()">Logout</el-button>
                 </el-form-item>
             </el-form>
             <el-alert v-if="loginError" title="Invalid login" type="error"
@@ -68,9 +69,14 @@ const login = () => {
     });
 };
 
+const logout = () => {
+    authStore.logout();
+    ElMessage({ showClose: true, message: "Logout success", type: 'warning'});
+}
+
 const currentLogin = authStore.getOrgAndUsername;
-console.log(currentLogin);
 if (currentLogin) {
+    console.log(currentLogin);
     loginData.value.org = currentLogin.org;
     loginData.value.username = currentLogin.name;
 }
