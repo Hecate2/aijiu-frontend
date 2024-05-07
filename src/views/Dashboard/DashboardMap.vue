@@ -11,10 +11,16 @@
  
 <script setup>
 import * as echarts from "echarts";
+import * as turf from '@turf/turf'
+import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 // import mapdata from "./city-data.json";
 import { onMounted, ref, watch, getCurrentInstance } from "vue";
-import axios from 'axios'
+import axios_global from 'axios'
+import axios from '@/http-common'
  
+const gps_data = (await axios.get("/machines/gps/")).data;
+console.log(gps_data);
+
 // 定义当前所有的地图
 let allMap = new Map();
  
@@ -105,8 +111,29 @@ function getCurrentadcodebyname(mapdata) {
 const renderChart = async (cMap) => {
   // myChart.showLoading(); // 加载动画
   // 访问当前的地图数据
-  let { data: mapdata } = await axios.get(cMap?.url);
+  let { data: mapdata } = await axios_global.get(cMap?.url);
+  console.log(mapdata)
   let currentName = cMap?.name;
+  
+  let provinces_machine_count = {}
+  let polygons = Object.fromEntries(mapdata.features.map(province => [
+    province.properties.name === "" ? "南海诸岛" : province.properties.name, turf.multiPolygon(province.geometry.coordinates)
+  ]));
+  gps_data.forEach(machine => {
+    const position = turf.point([machine.degreeE, machine.degreeN])
+    for (const [name, polygon] of Object.entries(polygons)) {
+      if (booleanPointInPolygon(position, polygon)) {
+        if (name in provinces_machine_count) {
+          provinces_machine_count[name] += 1
+        } else {
+          provinces_machine_count[name] = 1
+        }
+        break;
+      }
+    }
+  });
+  console.log(provinces_machine_count)
+  // console.log(Object.keys(provinces_machine_count).map(function(k) { return {name: k, value: provinces_machine_count[k]}; }))
  
   // 判断是否注册过
   if (!cMap?.hasRegister) {
@@ -142,8 +169,9 @@ const renderChart = async (cMap) => {
       left: "left",
       orient: "vertical",
       itemWidth: 10,
-      min: 0,
-      max: 120,
+      min: Object.keys(provinces_machine_count).length >= 34 ? 
+           Math.min.apply(null, Object.keys(provinces_machine_count).map(function(x) { return provinces_machine_count[x]} )) : 0,
+      max: Math.max.apply(null, Object.keys(provinces_machine_count).map(function(x) { return provinces_machine_count[x]} )),
       align: "center",
       bottom: "10%",
       inRange: {
@@ -223,13 +251,14 @@ const renderChart = async (cMap) => {
         //   blur: {},
         // },
         // data: dataMap,
-        data:[
-          {name:"北京市",value:100,},
-          {name:"上海市",value:80,},
-          {name:"广东省",value:120,},
-          {name:"黑龙江省",value:10,},
-          {name:"台湾省",value:100,},
-        ],
+        // data: [
+        //   {name:"北京市",value:100,},
+        //   {name:"上海市",value:80,},
+        //   {name:"广东省",value:120,},
+        //   {name:"黑龙江省",value:10,},
+        //   {name:"台湾省",value:100,},
+        // ],
+        data: Object.keys(provinces_machine_count).map(function(k) { return {name: k, value: provinces_machine_count[k]}; }),
       },
     ],
   };

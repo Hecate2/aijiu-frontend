@@ -16,6 +16,8 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@turf/boolean-point-in-polygon": "^6.5.0",
+    "@turf/turf": "^6.5.0",
     "axios": "^1.6.7",
     "echarts": "^5.5.0",
     "element-plus": "^2.6.0",
