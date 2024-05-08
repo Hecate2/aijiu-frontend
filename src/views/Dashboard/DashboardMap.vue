@@ -184,7 +184,7 @@ const renderChart = async (cMap) => {
       itemWidth: 10,
       min: Object.keys(provinces_machine_count).length >= 34 ? 
            Math.min.apply(null, Object.keys(provinces_machine_count).map(function(x) { return provinces_machine_count[x]} )) : 0,
-      max: Math.max.apply(null, Object.keys(provinces_machine_count).map(function(x) { return provinces_machine_count[x]} )),
+      max: Math.max(1, Math.max.apply(null, Object.keys(provinces_machine_count).map(function(x) { return provinces_machine_count[x]} ))),
       align: "center",
       bottom: "10%",
       inRange: {
