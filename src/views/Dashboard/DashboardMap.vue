@@ -10,6 +10,7 @@
 </template>
  
 <script setup>
+import { ElMessage } from 'element-plus';
 import * as echarts from "echarts";
 import * as turf from '@turf/turf'
 import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
@@ -17,9 +18,17 @@ import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import { onMounted, ref, watch, getCurrentInstance } from "vue";
 import axios_global from 'axios'
 import axios from '@/http-common'
- 
-const gps_data = (await axios.get("/machines/gps/")).data;
-console.log(gps_data);
+
+let gps_data;
+try {
+  gps_data = (await axios.get("/machines/gps/")).data;
+  console.log(gps_data);
+}catch (err) {
+  if (err.response == undefined)
+    ElMessage({ showClose: true, message: err.message, type: 'error', });
+  else
+    ElMessage({ showClose: true, message: err.response.data.detail, type: 'error', });
+}
 
 // 定义当前所有的地图
 let allMap = new Map();
