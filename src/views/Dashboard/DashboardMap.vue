@@ -48,6 +48,7 @@ const init = () => {
   });
   // 地图点击事件
   myChart.on("click", (params) => {
+    if (params.componentSubType !== "map") return;
     let n = getMapKey(params.name, allMap);
     if (allMap.get(n)?.childrenNum == 0) return;
     currentadcode.value = n;
@@ -150,10 +151,13 @@ const renderChart = async (cMap) => {
       position: "right",
       color: "#F7C034",
       formatter(d) {
+        if (d.componentSubType === "map")
+          return `<div>${d.name}:${
+            d?.data?.value || 0
+          }</div>`;
+        if (d.componentType === "markPoint")
+          return `<div>灸疗仪${d.data.name}: ${d.data.coord[0]}°E,${d.data.coord[0]}°N</div>`;
         // console.log(d);
-        return `<div>${d.name}:${
-          d?.data?.value || 0
-        }</div>`;
       },
     },
     title: {
@@ -188,7 +192,7 @@ const renderChart = async (cMap) => {
     },
     //层级地图配置
     series: [
-      {
+      {  // 每个省有多少灸疗仪。数量越多，该省颜色越红
         name: `${currentName}地图`,
         map: currentName,
         type: "map",
@@ -227,29 +231,6 @@ const renderChart = async (cMap) => {
             shadowBlur: 20,
           },
         },
-        // markPoint: {
-        //   symbol: "circle",
-        //   itemStyle: {
-        //     color: "#F7C034",
-        //     // borderColor:'#000'
-        //   },
-        //   label: {
-        //     normal: {
-        //       show: true,
-        //     },
-        //     emphasis: {
-        //       show: true,
-        //     },
-        //   },
-        //   // data: dataArr,
-        //   data: [
-        //     {
-        //       name: "广东省",
-        //       coord: [20, 20],
-        //     },
-        //   ],
-        //   blur: {},
-        // },
         // data: dataMap,
         // data: [
         //   {name:"北京市",value:100,},
@@ -260,9 +241,38 @@ const renderChart = async (cMap) => {
         // ],
         data: Object.keys(provinces_machine_count).map(function(k) { return {name: k, value: provinces_machine_count[k]}; }),
       },
+      {
+        type: 'map',
+        map: currentName,
+        itemStyle: {
+            normal: {
+                borderWidth: 1,
+                borderColor: 'yellow',
+                areaStyle: {
+                    color: 'rgba(0, 0, 0, 0)'
+                }
+            }
+        },
+        markPoint: {
+          effect: {
+              shadowBlur: 0.2
+          },
+          large: true,
+          symbolSize: 10,
+          data: gps_data.map(function (machine) {
+            return {
+                name: machine.client_id,
+                coord: [machine.degreeE, machine.degreeN]
+            };
+          }),
+        }
+      },
     ],
   };
   myChart.clear();
+  // myChart.on('click', function (e) {
+  //   console.log(myChart.convertFromPixel('geo', [e.event.offsetX, e.event.offsetY]));
+  // })
   myChart.setOption(option, true);
 };
 onMounted(() => {
