@@ -165,7 +165,7 @@ const renderChart = async (cMap) => {
             d?.data?.value || 0
           }</div>`;
         if (d.componentType === "markPoint")
-          return `<div>灸疗仪${d.data.name}: ${d.data.coord[0]}°E,${d.data.coord[0]}°N</div>`;
+          return `<div>${d.data.org}的灸疗仪${d.data.name}</div><div>${d.data.coord[0]}°E,${d.data.coord[1]}°N</div>`;
         // console.log(d);
       },
     },
@@ -271,7 +271,8 @@ const renderChart = async (cMap) => {
           data: gps_data.map(function (machine) {
             return {
                 name: machine.client_id,
-                coord: [machine.degreeE, machine.degreeN]
+                coord: [machine.degreeE, machine.degreeN],
+                org: machine.org
             };
           }),
         }
