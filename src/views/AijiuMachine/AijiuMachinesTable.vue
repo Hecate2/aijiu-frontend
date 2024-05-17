@@ -58,11 +58,22 @@
     <el-table-column sortable prop="createTime" label="创建时间" width="fit-content" />
     <el-table-column prop="actions" label="操作" width="fit-content">
       <template #default="scope">
+        <el-button type="primary" @click="viewMachineById(scope.row.id)" v-loading.fullscreen.lock="fullscreenLoading">
+          查看数据</el-button>
         <el-button v-if="删除开关" type="danger" @click="deleteMachine(scope.row.id, true)" v-loading.fullscreen.lock="fullscreenLoading">
           删除</el-button>
       </template>
     </el-table-column>
   </el-table>
+  <el-dialog
+      v-model="dialogVisible"
+      title="艾灸机数据"
+      width="30%"
+      :show-close="true"
+    >
+      <!-- Render the fetched content here -->
+      <p>{{ dialogContent }}</p>
+    </el-dialog>
 </template>
 
 <script lang="ts" setup>
@@ -81,6 +92,8 @@ const 删除开关 = ref(false)
 const 删除按钮 = ref('')
 const 主表格 = ref<InstanceType<typeof ElTable>>()
 const 多选 = ref<AijiuMachine[]>([])
+const dialogVisible = ref(false)
+const dialogContent = ref({})
 const fullscreenLoading = ref(false)
 
 interface AijiuMachine {
@@ -199,4 +212,23 @@ async function deleteMachine(id: string, refreshNow: Boolean) {
   if (refreshNow) { await refresh() }
 }
 
+async function viewMachineById(id: String) {
+  try {
+    // Make an asynchronous request to fetch data from your backend server
+    dialogContent.value = "Loading..."
+    dialogVisible.value = true
+    const response = await axios.get(`/machines/id/${id}`);
+    dialogContent.value = response.data
+  } catch (err) {
+    if (err.response == undefined) {
+      ElMessage({ showClose: true, message: err.message, type: 'error', });
+      dialogContent.value = err.message
+    }
+    else {
+      ElMessage({ showClose: true, message: err.response.data.detail, type: 'error', });
+      dialogContent.value = err.response.data.detail
+    }
+    return
+  }
+}
 </script>
