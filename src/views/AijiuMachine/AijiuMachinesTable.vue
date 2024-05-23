@@ -68,18 +68,21 @@
   <el-dialog
       v-model="dialogVisible"
       title="艾灸机数据"
-      width="30%"
+      width="90%"
       :show-close="true"
     >
-      <!-- Render the fetched content here -->
-      <p>{{ dialogContent }}</p>
+      <div>创建于 {{ dialogCreateTime }}</div>
+      <div>组织 {{ dialogOrg }} 的艾灸机 {{ dialogMachineId }}</div>
+      <div id="catalystTemperatureChart" ref="catalystTemperatureChart" style="width: 100%; height: 300px">Loading...</div>
+      <div id="fanRpmChart" ref="fanRpmChart" style="width: 100%; height: 300px">Loading...</div>
     </el-dialog>
 </template>
 
 <script lang="ts" setup>
 import { defineStore } from 'pinia'
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, nextTick } from 'vue'
 import { ElTable, ElMessage } from 'element-plus'
+import * as echarts from 'echarts';
 import axios from '@/http-common'
 
 const 组织输入 = ref('')
@@ -93,6 +96,9 @@ const 删除按钮 = ref('')
 const 主表格 = ref<InstanceType<typeof ElTable>>()
 const 多选 = ref<AijiuMachine[]>([])
 const dialogVisible = ref(false)
+const dialogOrg = ref("")
+const dialogMachineId = ref("")
+const dialogCreateTime = ref("")
 const dialogContent = ref({})
 const fullscreenLoading = ref(false)
 
@@ -216,9 +222,124 @@ async function viewMachineById(id: String) {
   try {
     // Make an asynchronous request to fetch data from your backend server
     dialogContent.value = "Loading..."
+    dialogOrg.value = ""
+    dialogMachineId.value = ""
+    dialogCreateTime.value = ""
     dialogVisible.value = true
     const response = await axios.get(`/machines/id/${id}`);
+    dialogOrg.value = response.data.org
+    dialogMachineId.value = response.data.id
+    dialogCreateTime.value = response.data.createTime
     dialogContent.value = response.data
+
+    let catalystTemperatureChart = echarts.init(document.getElementById('catalystTemperatureChart'));
+    let catalystTemperatureData = response.data.catalystTemperature.map((d: any) => [new Date(d.timestamp), d.temperature])
+    catalystTemperatureData.sort(function(a: any, b: any) { return a[0] - b[0]; });
+    var fanRpmChart = echarts.init(document.getElementById('fanRpmChart'));
+    var fanRpmChartData = response.data.fanRpm.map((d: any) => [new Date(d.timestamp), d.rpm])
+    fanRpmChartData.sort(function(a: any, b: any) { return a[0] - b[0]; });
+    var option = {
+      width: '100%',
+      title: {
+        text: '三元催化温度'
+      },
+      tooltip: {
+        trigger: 'axis',
+        position: (pos: any, params: any, el: any, elRect: any, size: any) => {
+          var obj: any = { top: 10 };
+          obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30;
+          return obj;
+        },
+        formatter: function (params: any) {
+          params = params[0].data;
+          var date = new Date(params[0]);
+          return (
+            date +
+            ' : ' +
+            params[1]
+          );
+        },
+        axisPointer: {
+          animation: true
+        }
+      },
+      xAxis: {
+        type: 'time',
+        splitLine: {
+          show: false
+        }
+      },
+      yAxis: {
+        type: 'value',
+        boundaryGap: [0, '100%'],
+        splitLine: {
+          show: true
+        },
+        // min: Math.round(Math.min(response.data.catalystTemperature.map((d: any) => d.temperature)) / 10 - 1) * 10,
+        // max: Math.round(Math.max(response.data.catalystTemperature.map((d: any) => d.temperature)) / 10 + 1) * 10 ,
+      },
+      series: [
+        {
+          name: '三元催化温度',
+          type: 'line',
+          showSymbol: false,
+          data: catalystTemperatureData
+        }
+      ]
+    };
+    option && catalystTemperatureChart.setOption(option, true);
+
+    option = {
+      width: '100%',
+      title: {
+        text: '散热风机转速'
+      },
+      tooltip: {
+        trigger: 'axis',
+        position: (pos: any, params: any, el: any, elRect: any, size: any) => {
+          var obj: any = { top: 10 };
+          obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30;
+          return obj;
+        },
+        formatter: function (params: any) {
+          params = params[0].data;
+          var date = new Date(params[0]);
+          return (
+            date +
+            ' : ' +
+            params[1]
+          );
+        },
+        axisPointer: {
+          animation: true
+        }
+      },
+      xAxis: {
+        type: 'time',
+        splitLine: {
+          show: false
+        }
+      },
+      yAxis: {
+        type: 'value',
+        boundaryGap: [0, '100%'],
+        splitLine: {
+          show: true
+        },
+        // min: Math.round(Math.min(response.data.catalystTemperature.map((d: any) => d.temperature)) / 10 - 1) * 10,
+        // max: Math.round(Math.max(response.data.catalystTemperature.map((d: any) => d.temperature)) / 10 + 1) * 10 ,
+      },
+      series: [
+        {
+          name: '散热风机转速',
+          type: 'line',
+          showSymbol: false,
+          data: fanRpmChartData
+        }
+      ]
+    };
+    option && fanRpmChart.setOption(option, true);
+
   } catch (err) {
     if (err.response == undefined) {
       ElMessage({ showClose: true, message: err.message, type: 'error', });
