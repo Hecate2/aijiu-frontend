@@ -75,6 +75,7 @@
       <div>组织 {{ dialogOrg }} 的艾灸机 {{ dialogMachineId }}</div>
       <div id="catalystTemperatureChart" ref="catalystTemperatureChart" style="width: 100%; height: 300px">Loading...</div>
       <div id="fanRpmChart" ref="fanRpmChart" style="width: 100%; height: 300px">Loading...</div>
+      <div id="aitiaoLifeChart" ref="aitiaoLifeChart" style="width: 100%; height: 300px">Loading...</div>
     </el-dialog>
 </template>
 
@@ -238,6 +239,9 @@ async function viewMachineById(id: String) {
     var fanRpmChart = echarts.init(document.getElementById('fanRpmChart'));
     var fanRpmChartData = response.data.fanRpm.map((d: any) => [new Date(d.timestamp), d.rpm])
     fanRpmChartData.sort(function(a: any, b: any) { return a[0] - b[0]; });
+    var aitiaoLifeChart = echarts.init(document.getElementById('aitiaoLifeChart'));
+    var aitiaoLifeChartData = response.data.aitiaoLife.map((d: any) => [new Date(d.timestamp), d.aitiao_life])
+    aitiaoLifeChartData.sort(function(a: any, b: any) { return a[0] - b[0]; });
     var option = {
       width: '100%',
       title: {
@@ -339,6 +343,57 @@ async function viewMachineById(id: String) {
       ]
     };
     option && fanRpmChart.setOption(option, true);
+
+    option = {
+      width: '100%',
+      title: {
+        text: '艾条剩余寿命'
+      },
+      tooltip: {
+        trigger: 'axis',
+        position: (pos: any, params: any, el: any, elRect: any, size: any) => {
+          var obj: any = { top: 10 };
+          obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30;
+          return obj;
+        },
+        formatter: function (params: any) {
+          params = params[0].data;
+          var date = new Date(params[0]);
+          return (
+            date +
+            ' : ' +
+            params[1]
+          );
+        },
+        axisPointer: {
+          animation: true
+        }
+      },
+      xAxis: {
+        type: 'time',
+        splitLine: {
+          show: false
+        }
+      },
+      yAxis: {
+        type: 'value',
+        boundaryGap: [0, '100%'],
+        splitLine: {
+          show: true
+        },
+        // min: Math.round(Math.min(response.data.catalystTemperature.map((d: any) => d.temperature)) / 10 - 1) * 10,
+        // max: Math.round(Math.max(response.data.catalystTemperature.map((d: any) => d.temperature)) / 10 + 1) * 10 ,
+      },
+      series: [
+        {
+          name: '艾条剩余寿命',
+          type: 'line',
+          showSymbol: false,
+          data: aitiaoLifeChartData
+        }
+      ]
+    };
+    option && aitiaoLifeChart.setOption(option, true);
 
   } catch (err) {
     if (err.response == undefined) {
