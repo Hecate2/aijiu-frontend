@@ -95,7 +95,7 @@
         </el-input>
       </template>
     </el-table-column>
-    <el-table-column sortable prop="connectedAt" label="上线时间(无数据则不在线)" width="fit-content" />
+    <el-table-column sortable :sort-method="sortConnectedAt" prop="connectedAt" label="上线时间(无数据则不在线)" width="fit-content" />
     <el-table-column sortable prop="createTime" label="创建时间" width="fit-content" />
     <el-table-column prop="actions" label="操作" width="fit-content">
       <template #default="scope">
@@ -154,9 +154,18 @@ interface AijiuMachine {
   id: string
   model: string
   remark: string
-  connectedAt: Date
+  connectedAt?: Date
   createTime: Date
 }
+
+const sortConnectedAt = (a, b) => {
+  // null connectedAt should be sorted as small values
+  if (a.connectedAt==null && b.connectedAt==null) return 0;
+  if (a.connectedAt==null) return -1;
+  if (b.connectedAt==null) return 1;
+  return a.connectedAt - b.connectedAt;
+}
+
 const use主表数据store = defineStore('请求结果store', () =>{
   let aijiuMachines = reactive([] as AijiuMachine[])
   const addMachine = (o: AijiuMachine) => { aijiuMachines.push(o) }
