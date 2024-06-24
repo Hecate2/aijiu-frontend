@@ -17,6 +17,24 @@
         placeholder="输入多个灸疗仪id，以空格/换行/制表符/中英文逗号分割" />
     </el-col>
   </el-row>
+  <el-row style="margin-top: 10px; margin-bottom: 10px;">
+    <el-col :span="4">
+      <el-button type="info" @click="setMachineModels()" v-loading.fullscreen.lock="fullscreenLoading">设置型号</el-button>
+    </el-col>
+    <el-col :span="20">
+      <el-input v-model="设置型号输入" maxlength="2147483647" show-word-limit :autosize="{ maxRows: 1 }" type="textarea"
+        placeholder="新建的灸疗仪会是这里填入的型号" />
+    </el-col>
+  </el-row>
+  <el-row style="margin-top: 10px; margin-bottom: 10px;">
+    <el-col :span="4">
+      <el-button type="info" @click="setMachineRemarks()" v-loading.fullscreen.lock="fullscreenLoading">设置备注</el-button>
+    </el-col>
+    <el-col :span="20">
+      <el-input v-model="设置备注输入" maxlength="2147483647" show-word-limit :autosize="{ maxRows: 1 }" type="textarea"
+        placeholder="新建的灸疗仪会带上这里填入的备注" />
+    </el-col>
+  </el-row>
   <el-row>
     <el-col :span="4">
       <el-switch v-model="组织区分大小写" active-text="区分大小写" />
@@ -31,6 +49,14 @@
     </el-col>
     <el-col :span="20">
       <el-input v-model="按id搜索输入" placeholder="按id搜索" clearable/>
+    </el-col>
+  </el-row>
+  <el-row>
+    <el-col :span="4">
+      <el-switch v-model="型号区分大小写" active-text="区分大小写" />
+    </el-col>
+    <el-col :span="20">
+      <el-input v-model="按型号搜索输入" placeholder="按型号搜索" clearable/>
     </el-col>
   </el-row>
   <div style="margin-top: 10px; margin-bottom: 10px;">
@@ -54,6 +80,18 @@
     <el-table-column fixed type="selection" width="fit-content" />
     <el-table-column fixed sortable prop="org" label="组织" width="fit-content" />
     <el-table-column fixed sortable prop="id" label="id" width="fit-content" />
+    <el-table-column fixed sortable prop="model" label="型号" width="fit-content">
+      <template #default="scope">
+        <el-input v-model="scope.row.model" @blur="setMachineModel(scope.row.id, scope.row.model, true)">
+        </el-input>
+      </template>
+    </el-table-column>
+    <el-table-column fixed sortable prop="remark" label="备注" width="fit-content">
+      <template #default="scope">
+        <el-input v-model="scope.row.remark" @blur="setMachineRemark(scope.row.id, scope.row.remark, true)">
+        </el-input>
+      </template>
+    </el-table-column>
     <el-table-column fixed sortable prop="connectedAt" label="上线时间(无数据则不在线)" width="fit-content" />
     <el-table-column sortable prop="createTime" label="创建时间" width="fit-content" />
     <el-table-column prop="actions" label="操作" width="fit-content">
@@ -88,10 +126,14 @@ import axios from '@/http-common'
 
 const 组织输入 = ref('')
 const 新建灸疗仪输入 = ref('')
+const 设置型号输入 = ref('')
+const 设置备注输入 = ref('')
 const 按组织搜索输入 = ref('')
 const 组织区分大小写 = ref(false)
 const 按id搜索输入 = ref('')
 const id区分大小写 = ref(false)
+const 按型号搜索输入 = ref('')
+const 型号区分大小写 = ref(false)
 const 删除开关 = ref(false)
 const 删除按钮 = ref('')
 const 主表格 = ref<InstanceType<typeof ElTable>>()
@@ -106,6 +148,8 @@ const fullscreenLoading = ref(false)
 interface AijiuMachine {
   org: string
   id: string
+  model: string
+  remark: string
   connectedAt: Date
   createTime: Date
 }
@@ -142,6 +186,9 @@ const 主表数据: ref<AijiuMachine[]> = computed(() =>
       &&
       (!按组织搜索输入.value ||
       组织区分大小写.value ? data.org.includes(按组织搜索输入.value) : data.org.toLowerCase().includes(按组织搜索输入.value.toLowerCase()))
+      &&
+      (!按型号搜索输入.value ||
+      (型号区分大小写.value ? (data.model?.includes(按型号搜索输入.value)) : (data.model?.toLowerCase().includes(按型号搜索输入.value.toLowerCase()))))
   ))
 
 const toggleAllSelection = () => 主表格.value!.toggleAllSelection()
@@ -170,6 +217,12 @@ async function createMachine(id: string) {
   try {
     fullscreenLoading.value = true
     await axios.post("/machines/id/"+id+"/"+"root");
+    if (设置型号输入.value) {
+      await axios.patch(`machines/model/${id}/${设置型号输入.value}`)
+    }
+    if (设置备注输入.value) {
+      await axios.patch(`machines/remark/${id}/${设置备注输入.value}`)
+    }
   } catch (err) {
     if (err.response == undefined)
       ElMessage({ showClose: true, message: err.message, type: 'error', });
@@ -179,6 +232,48 @@ async function createMachine(id: string) {
   }finally{
     fullscreenLoading.value = false
   }
+}
+
+async function setMachineModels() {
+  await Promise.all(主表格.value!.getSelectionRows().map((row: { id: string; }) => setMachineModel(row.id, 设置型号输入.value, false)))
+  await refresh()
+}
+
+async function setMachineModel(id: string, model: string, refreshNow: Boolean) {
+  try{
+    fullscreenLoading.value = true
+    await axios.patch(`/machines/model/${id}/${model}`);
+  }catch(err){
+    if (err.response == undefined)
+      ElMessage({ showClose: true, message: err.message, type: 'error', });
+    else
+      ElMessage({ showClose: true, message: err.response.data.detail, type: 'error', });
+    return
+  }finally{
+    fullscreenLoading.value = false
+  }
+  if (refreshNow) { await refresh() }
+}
+
+async function setMachineRemarks() {
+  await Promise.all(主表格.value!.getSelectionRows().map((row: { id: string; }) => setMachineRemark(row.id, 设置备注输入.value, false)))
+  await refresh()
+}
+
+async function setMachineRemark(id: string, remark: string, refreshNow: Boolean) {
+  try{
+    fullscreenLoading.value = true
+    await axios.patch(`/machines/remark/${id}/${remark}`);
+  }catch(err){
+    if (err.response == undefined)
+      ElMessage({ showClose: true, message: err.message, type: 'error', });
+    else
+      ElMessage({ showClose: true, message: err.response.data.detail, type: 'error', });
+    return
+  }finally{
+    fullscreenLoading.value = false
+  }
+  if (refreshNow) { await refresh() }
 }
 
 async function changeMachinesOrg() {
