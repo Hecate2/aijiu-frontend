@@ -63,6 +63,9 @@
     <el-button @click="toggleAllSelection()">全选/全不选</el-button>
     <el-button @click="reverseSelection()">反选</el-button>
     <el-button @click="clearSelection()">清除选择</el-button>
+    <el-switch v-model="编辑开关" style="margin-left: 10px;
+      --el-switch-on-color: #ff4949; --el-switch-off-color: #e6a23c"
+      active-text="启用编辑" inactive-text="禁用编辑" />
     <el-switch v-model="删除开关" style="margin-left: 10px;
       --el-switch-on-color: #ff4949; --el-switch-off-color: #e6a23c"
       active-text="启用删除" inactive-text="禁用删除" />
@@ -75,24 +78,24 @@
     <!-- @click="clearSelection()"  -->
   </div>
   <el-table ref="主表格" @selection-change="handleSelectionChange"
-    :default-sort="{ prop: 'connectedAt', order: 'ascending' }" :data="主表数据" border stripe
+    :default-sort="{ prop: 'connectedAt', order: 'descending' }" :data="主表数据" border stripe
     style="width: 100%; --el-table-row-hover-bg-color: #ecf5ff;">
-    <el-table-column fixed type="selection" width="fit-content" />
-    <el-table-column fixed sortable prop="org" label="组织" width="fit-content" />
-    <el-table-column fixed sortable prop="id" label="id" width="fit-content" />
-    <el-table-column fixed sortable prop="model" label="型号" width="fit-content">
+    <el-table-column sortable type="selection" width="fit-content" />
+    <el-table-column sortable prop="org" label="组织" width="fit-content" />
+    <el-table-column sortable prop="id" label="id" width="fit-content" />
+    <el-table-column sortable prop="model" label="型号" width="fit-content">
       <template #default="scope">
-        <el-input v-model="scope.row.model" @blur="setMachineModel(scope.row.id, scope.row.model, true)">
+        <el-input v-model="scope.row.model" :disabled=!编辑开关 @blur="setMachineModel(scope.row.id, scope.row.model, true)">
         </el-input>
       </template>
     </el-table-column>
-    <el-table-column fixed sortable prop="remark" label="备注" width="fit-content">
+    <el-table-column sortable prop="remark" label="备注" width="fit-content">
       <template #default="scope">
-        <el-input v-model="scope.row.remark" @blur="setMachineRemark(scope.row.id, scope.row.remark, true)">
+        <el-input v-model="scope.row.remark" :disabled=!编辑开关 @blur="setMachineRemark(scope.row.id, scope.row.remark, true)">
         </el-input>
       </template>
     </el-table-column>
-    <el-table-column fixed sortable prop="connectedAt" label="上线时间(无数据则不在线)" width="fit-content" />
+    <el-table-column sortable prop="connectedAt" label="上线时间(无数据则不在线)" width="fit-content" />
     <el-table-column sortable prop="createTime" label="创建时间" width="fit-content" />
     <el-table-column prop="actions" label="操作" width="fit-content">
       <template #default="scope">
@@ -134,6 +137,7 @@ const 按id搜索输入 = ref('')
 const id区分大小写 = ref(false)
 const 按型号搜索输入 = ref('')
 const 型号区分大小写 = ref(false)
+const 编辑开关 = ref(true)
 const 删除开关 = ref(false)
 const 删除按钮 = ref('')
 const 主表格 = ref<InstanceType<typeof ElTable>>()
