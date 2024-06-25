@@ -1,3 +1,13 @@
+### Deployment Instructions
+
+```bash
+pnpm build-only
+```
+
+Copy `/dist` to `aijiu-backend/dist`
+
+Run `aijiu-backend/main.py`
+
 # aijiu-frontend
 
 This template should help get you started developing with Vue 3 in Vite.
