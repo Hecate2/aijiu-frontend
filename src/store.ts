@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import axios_ from 'axios';
 
 const axios = axios_.create({
-    baseURL: "http://localhost:8000/api/v1", //后端地址
+    baseURL: "http://localhost:58000/api/v1", //后端地址
     headers: {
       'Content-type': 'application/json',
     },
