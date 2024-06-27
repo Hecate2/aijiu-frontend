@@ -45,14 +45,14 @@ export const useAuthStore = defineStore({
             return response
         },
         async logout() {
-            // await axios.post(`auth/login/revoke-token`);  // Not implemented at backend
+            // await axios.post(`auth/login/revoke-token`/);  // Not implemented at backend
             this.stopRefreshTokenTimer();
             this.token = "";
             localStorage.removeItem(this.$id)
             // router.push('/login');
         },
         async refreshToken() {
-            // this.token = await axios.post(`auth/login/refresh-token`);  // Not implemented at backend
+            // this.token = await axios.post(`auth/login/refresh-token/`);  // Not implemented at backend
             this.startRefreshTokenTimer();
         },
         startRefreshTokenTimer() {

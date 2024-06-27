@@ -21,7 +21,7 @@ import axios from '@/http-common'
 
 let gps_data;
 try {
-  gps_data = (await axios.get("/machines/gps")).data;
+  gps_data = (await axios.get("/machines/gps/")).data;
   console.log(gps_data);
 }catch (err) {
   if (err.response == undefined)
