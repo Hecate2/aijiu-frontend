@@ -180,7 +180,7 @@ const 主表数据store = use主表数据store()
 async function refresh() {
   try{
     fullscreenLoading.value = true
-    主表数据store.aijiuMachines = (await axios.get("/machines/")).data;
+    主表数据store.aijiuMachines = (await axios.get("/machines")).data;
   }catch(err){
     if (err.response == undefined)
       ElMessage({ showClose: true, message: err.message, type: 'error', });
@@ -229,12 +229,12 @@ async function createMachine(id: string) {
   // TODO: 只有root组织或者有权限的组织能创建机器
   try {
     fullscreenLoading.value = true
-    await axios.post(`/machines/id/${id}/root/`);
+    await axios.post(`/machines/id/${id}/root`);
     if (设置型号输入.value) {
-      await axios.patch(`/machines/model/${id}/${设置型号输入.value}/`)
+      await axios.patch(`/machines/model/${id}/${设置型号输入.value}`)
     }
     if (设置备注输入.value) {
-      await axios.patch(`/machines/remark/${id}/${设置备注输入.value}/`)
+      await axios.patch(`/machines/remark/${id}/${设置备注输入.value}`)
     }
   } catch (err) {
     if (err.response == undefined)
@@ -255,7 +255,7 @@ async function setMachineModels() {
 async function setMachineModel(id: string, model: string, refreshNow: Boolean) {
   try{
     fullscreenLoading.value = true
-    await axios.patch(`/machines/model/${id}/${model}/`);
+    await axios.patch(`/machines/model/${id}/${model}`);
   }catch(err){
     if (err.response == undefined)
       ElMessage({ showClose: true, message: err.message, type: 'error', });
@@ -276,7 +276,7 @@ async function setMachineRemarks() {
 async function setMachineRemark(id: string, remark: string, refreshNow: Boolean) {
   try{
     fullscreenLoading.value = true
-    await axios.patch(`/machines/remark/${id}/${remark}/`);
+    await axios.patch(`/machines/remark/${id}/${remark}`);
   }catch(err){
     if (err.response == undefined)
       ElMessage({ showClose: true, message: err.message, type: 'error', });
@@ -297,7 +297,7 @@ async function changeMachinesOrg() {
 async function changeMachineOrg(id: string, newOrg: string, refreshNow: Boolean) {
   try{
     fullscreenLoading.value = true
-    await axios.patch(`/machines/id/${id}/${newOrg}/`);
+    await axios.patch(`/machines/id/${id}/${newOrg}`);
   }catch(err){
     if (err.response == undefined)
       ElMessage({ showClose: true, message: err.message, type: 'error', });
@@ -314,7 +314,7 @@ async function deleteMachine(id: string, refreshNow: Boolean) {
   // TODO: 只有root组织或者有权限的组织能删除机器
   try{
     fullscreenLoading.value = true
-    await axios.delete(`/machines/id/${id}/`);
+    await axios.delete(`/machines/id/${id}`);
   }catch(err){
     if (err.response == undefined)
       ElMessage({ showClose: true, message: err.message, type: 'error', });
@@ -335,7 +335,7 @@ async function viewMachineById(id: String) {
     dialogMachineId.value = ""
     dialogCreateTime.value = ""
     dialogVisible.value = true
-    const response = await axios.get(`/machines/id/${id}/`);
+    const response = await axios.get(`/machines/id/${id}`);
     dialogOrg.value = response.data.org
     dialogMachineId.value = response.data.id
     dialogCreateTime.value = response.data.createTime

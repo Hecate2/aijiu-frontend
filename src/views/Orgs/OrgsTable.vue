@@ -89,7 +89,7 @@ const 主表数据store = use主表数据store()
 async function refresh() {
   try{
     fullscreenLoading.value = true
-    主表数据store.orgs = (await axios.get("/orgs/")).data;
+    主表数据store.orgs = (await axios.get("/orgs")).data;
   }catch(err){
     if (err.response == undefined)
       ElMessage({ showClose: true, message: err.message, type: 'error', });
@@ -134,7 +134,7 @@ async function createManyOrgs() {
 async function createOrg(name: string) {
   try {
     fullscreenLoading.value = true
-    await axios.post(`/orgs/${name}/`);
+    await axios.post(`/orgs/${name}`);
   } catch (err) {
     if (err.response == undefined)
       ElMessage({ showClose: true, message: err.message, type: 'error', });
@@ -149,7 +149,7 @@ async function createOrg(name: string) {
 async function renameOrg(oldName: string, newName: string) {
   try {
     fullscreenLoading.value = true
-    await axios.post(`/orgs/${oldName}/${newName}/`);
+    await axios.post(`/orgs/${oldName}/${newName}`);
   } catch (err) {
     if (err.response == undefined)
       ElMessage({ showClose: true, message: err.message, type: 'error', });
@@ -165,7 +165,7 @@ async function renameOrg(oldName: string, newName: string) {
 async function deleteOrg(name: string, refreshNow: Boolean) {
   try{
     fullscreenLoading.value = true
-    await axios.delete(`/orgs/${name}/`);
+    await axios.delete(`/orgs/${name}`);
   }catch(err){
     if (err.response == undefined)
       ElMessage({ showClose: true, message: err.message, type: 'error', });
