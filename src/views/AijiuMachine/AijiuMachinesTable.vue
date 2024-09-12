@@ -351,7 +351,7 @@ async function viewMachineById(id: String) {
     var aitiaoLifeChartData = response.data.aitiaoLife.map((d: any) => [new Date(d.timestamp), d.aitiao_life])
     aitiaoLifeChartData.sort(function(a: any, b: any) { return a[0] - b[0]; });
     var option = {
-      width: '100%',
+      width: '80%',
       title: {
         text: '三元催化温度'
       },
@@ -402,7 +402,7 @@ async function viewMachineById(id: String) {
     option && catalystTemperatureChart.setOption(option, true);
 
     option = {
-      width: '100%',
+      width: '80%',
       title: {
         text: '散热风机转速'
       },
@@ -453,7 +453,7 @@ async function viewMachineById(id: String) {
     option && fanRpmChart.setOption(option, true);
 
     option = {
-      width: '100%',
+      width: '80%',
       title: {
         text: '艾条剩余寿命'
       },
