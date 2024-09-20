@@ -99,7 +99,10 @@
     <el-table-column sortable prop="createTime" label="创建时间" width="fit-content" />
     <el-table-column prop="actions" label="操作" width="fit-content">
       <template #default="scope">
-        <el-button type="primary" @click="viewMachineById(scope.row.id)" v-loading.fullscreen.lock="fullscreenLoading">
+        <el-button type="primary" @click="() => {
+          viewMachineById(scope.row.id, days);
+          currentViewedId = scope.row.id;
+          }" v-loading.fullscreen.lock="fullscreenLoading">
           查看数据</el-button>
         <el-button v-if="删除开关" type="danger" @click="deleteMachine(scope.row.id, true)" v-loading.fullscreen.lock="fullscreenLoading">
           删除</el-button>
@@ -114,6 +117,7 @@
     >
       <div>创建于 {{ dialogCreateTime }}</div>
       <div>组织 {{ dialogOrg }} 的艾灸机 {{ dialogMachineId }}</div>
+      <div>只看最近<el-input v-model="days" style="width: 100px" placeholder="100" @change="viewMachineById(currentViewedId, days)"/>天</div>
       <div id="catalystTemperatureChart" ref="catalystTemperatureChart" style="width: 100%; height: 300px">Loading...</div>
       <div id="fanRpmChart" ref="fanRpmChart" style="width: 100%; height: 300px">Loading...</div>
       <div id="aitiaoLifeChart" ref="aitiaoLifeChart" style="width: 100%; height: 300px">Loading...</div>
@@ -148,6 +152,8 @@ const dialogMachineId = ref("")
 const dialogCreateTime = ref("")
 const dialogContent = ref({})
 const fullscreenLoading = ref(false)
+const currentViewedId = ref('')
+const days = ref(100)
 
 interface AijiuMachine {
   org: string
@@ -327,15 +333,14 @@ async function deleteMachine(id: string, refreshNow: Boolean) {
   if (refreshNow) { await refresh() }
 }
 
-async function viewMachineById(id: String) {
+async function viewMachineById(id: String, days: Number) {
   try {
-    // Make an asynchronous request to fetch data from your backend server
     dialogContent.value = "Loading..."
     dialogOrg.value = ""
     dialogMachineId.value = ""
     dialogCreateTime.value = ""
     dialogVisible.value = true
-    const response = await axios.get(`/machines/id/${id}`);
+    const response = await axios.get(`/machines/id/${id}?days=${days}`);
     dialogOrg.value = response.data.org
     dialogMachineId.value = response.data.id
     dialogCreateTime.value = response.data.createTime
